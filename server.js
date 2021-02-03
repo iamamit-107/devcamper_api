@@ -4,10 +4,12 @@ const dotenv = require("dotenv").config();
 const morgan = require("morgan");
 const connectDB = require("./config/db");
 const fileupload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/error");
 // importing Routes
 const bootcamp = require("./routers/bootcamps");
 const courses = require("./routers/courses");
+const auth = require("./routers/auth");
 
 const app = express();
 
@@ -18,6 +20,8 @@ if (process.env.NODE_ENV === "development") {
 
 // Body parse middleware
 app.use(express.json());
+// Cookie Parser
+app.use(cookieParser());
 // File upload
 app.use(fileupload());
 // Set public folder
@@ -26,6 +30,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // Mounitng Routes
 app.use("/api/v1/bootcamps", bootcamp);
 app.use("/api/v1/courses", courses);
+app.use("/api/v1/auth", auth);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 6000;
