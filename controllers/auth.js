@@ -3,7 +3,6 @@ const crypto = require("crypto");
 const User = require("../models/User");
 const errorResponse = require("../utils/errorResponse");
 const sendEmail = require("../utils/sendEmail");
-const { nextTick } = require("process");
 
 /**
  *
@@ -71,6 +70,49 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     success: true,
     data: user,
   });
+});
+
+/**
+ *
+ * @desc  Update user details
+ * @route PUT /api/v1/auth/updatedetails
+ * @access Private
+ */
+exports.updateDetails = asyncHandler(async (req, res, next) => {
+  const update = {
+    name: req.body.name,
+    email: req.body.email,
+  };
+
+  const user = await User.findByIdAndUpdate(req.user._id, update, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
+
+/**
+ *
+ * @desc  Update user Password
+ * @route PUT /api/v1/auth/updatepassword
+ * @access Private
+ */
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user._id).select("+password");
+
+  // Check current password
+  if (!(await user.matchPassword(req.body.currentPassword))) {
+    return next(new errorResponse("Password is incorrect", 401));
+  }
+
+  user.password = req.body.newPassword;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
 });
 
 /**
